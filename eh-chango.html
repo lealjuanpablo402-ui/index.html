@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eh Chango | Normativas 6.º B Electromecánica</title>
+<style>
+:root{--bg:#15171a;--pn:#22262b;--ln:#3d444c;--tx:#eceff1;--mu:#aab3bb;--ac:#ffc21a;--ab:#ffc21a;--at:#14171a;--us:#2c3b4a}
+[data-theme=light]{--bg:#e6e9ec;--pn:#fff;--ln:#8a939c;--tx:#14171a;--mu:#3f4850;--ac:#7a5600;--us:#dbe6f0}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:17px/1.6 "Segoe UI",Roboto,Arial,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:var(--pn);border-bottom:4px solid transparent;border-image:repeating-linear-gradient(-45deg,#ffc21a 0 12px,#14171a 12px 24px) 4}
+h1{font:800 1.25rem/1.1 Impact,"Arial Black",sans-serif;letter-spacing:.5px;margin:0}
+h1 small{display:block;font:400 .75rem "Segoe UI",Arial,sans-serif;color:var(--mu);letter-spacing:0}
+button{font:inherit;cursor:pointer;border-radius:4px}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+#log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;max-width:820px;width:100%;margin:0 auto}
+.m{flex:none;max-width:96%;padding:12px 14px;border:1px solid var(--ln);border-radius:4px;background:var(--pn);overflow:visible;overflow-wrap:anywhere}
+.m.u{align-self:flex-end;background:var(--us)}
+.m.b{align-self:flex-start;border-left:6px solid var(--ac)}
+.m h3{margin:0 0 6px;font-size:1.05rem}
+.m p{margin:6px 0}
+.pt{font-weight:700;color:var(--ac);margin-top:8px}
+.cita{margin-top:10px;padding:10px;border:1px dashed var(--ln);font-size:.95rem;color:var(--mu)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;margin:8px 0}
+th,td{border:1px solid var(--ln);padding:4px 6px;text-align:left;vertical-align:top}
+th{background:var(--us)}
+ul{margin:6px 0;padding-left:20px}
+.ops{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ops button{background:var(--ab);color:var(--at);border:2px solid #000;padding:8px 12px;font-weight:700;text-align:left}
+.ops button.g{background:transparent;color:var(--tx);border-color:var(--ln)}
+form{display:flex;gap:8px;padding:10px 14px;background:var(--pn);border-top:1px solid var(--ln);max-width:820px;width:100%;margin:0 auto}
+input{flex:1;min-width:0;padding:10px;font:inherit;background:var(--bg);color:var(--tx);border:2px solid var(--ln);border-radius:4px}
+form button,#th{background:var(--ab);color:var(--at);border:2px solid #000;padding:8px 14px;font-weight:700}
+@media(prefers-reduced-motion:no-preference){.m{animation:in .2s}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
+</style>
+</head>
+<body>
+<header>
+  <h1>EH CHANGO<small>Asistente de normativas, 6.º año B Electromecánica</small></h1>
+  <button id="th" type="button" aria-label="Cambiar entre modo oscuro y claro">Modo claro</button>
+</header>
+<main id="log" role="log" aria-live="polite" aria-label="Conversación"></main>
+<form id="f" autocomplete="off">
+  <input id="q" type="text" aria-label="Escribí tu consulta" placeholder="Escribí tu duda (ej: IP54, matafuegos, puesta a tierra)">
+  <button type="submit">Enviar</button>
+</form>
+
+<script>
+/* =====================================================================
+   1. DATOS: TEMAS Y NORMATIVAS
+   ---------------------------------------------------------------------
+   CÓMO AGREGAR UNA NORMATIVA NUEVA:
+   a) Sumá un objeto en KB con un id único:
+      id:{t:'Título', k:['palabras','clave'], p:'HTML explicación práctica', c:'HTML cita exacta'}
+      (k va en minúsculas y sin tildes; sirve para la búsqueda por texto)
+   b) Agregá ese id en la lista "items" del tema que corresponda (TEMAS).
+   Para armar tablas usá la función tabla(['Col1','Col2'], [['a','b'],['c','d']]).
+   ===================================================================== */
+const tabla=(h,r)=>'<table><tr>'+h.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+r.map(f=>'<tr>'+f.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</table>';
+const IEC='IEC 60529 (Edición 2.1, versión en español)';
+const D351='Decreto 351/79, Anexo VII, Cap. 18 (Protección contra incendios)';
+const REV='Revista Ingeniería Eléctrica, octubre 2014, pp. 50 a 52, "Las 5 reglas de oro del trabajo sin tensión" (LIAT); incluidas en Ley 19.587, Cap. 14 (instalaciones eléctricas)';
+
+const TEMAS=[
+ {id:'ip',n:'Calculador IP (Grados de Protección)',items:['ip_estr','ip_1','ip_2','ip_let','ip_ej','ip_ens']},
+ {id:'epp',n:'Matriz de EPP y Distancias de Seguridad',items:['epp']},
+ {id:'ext',n:'Extintores y protección contra incendios',items:['ext_gral','ext_A','ext_B','ext_cl','inc_riesgo','inc_carga','inc_esc','inc_mano','inc_maq']},
+ {id:'chk',n:'Lista de chequeo: 5 Reglas de Oro',items:['r_lista','r1','r2','r3','r4','r5']}
+];
+
+const KB={
+/* ---------- TEMA 1: CÓDIGO IP (IEC 60529) ---------- */
+ip_estr:{t:'Cómo se lee el código IP',k:['codigo ip','como se lee','estructura','ip44','x','letras','grado de proteccion','envolvente'],
+ p:'<p>El código IP dice qué tan protegida está una envolvente (gabinete, caja, carcasa). Se arma: <b>IP + 1.ª cifra</b> (sólidos y acceso, 0 a 6) <b>+ 2.ª cifra</b> (agua, 0 a 8) <b>+ letra adicional</b> (A a D, opcional) <b>+ letra suplementaria</b> (H, M, S, W, opcional).</p><p>Si una cifra no hace falta se pone <b>X</b> (IPX5, IP2X). Las letras opcionales se omiten sin reemplazo. Un grado alto cumple también los inferiores, hasta la 2.ª cifra 6. Un 7 u 8 solo NO sirve para chorros de agua, salvo doble marcado (IPX5/IPX7).</p>',
+ c:IEC+', cap. 4.1 y 4.2 (disposición y elementos del código), cap. 5 y 6 (cumplimiento de grados inferiores).'},
+ip_1:{t:'Primera cifra: sólidos y acceso a partes peligrosas',k:['primera cifra','1 cifra','solidos','polvo','dedo','herramienta','alambre','dorso','mano'],
+ p:tabla(['Cifra','Sólidos (protege al equipo)','Acceso (protege a la persona)'],[['0','No protegido','No protegido'],['1','≥ 50 mm','Dorso de la mano'],['2','≥ 12,5 mm','Dedo'],['3','≥ 2,5 mm','Herramienta'],['4','≥ 1,0 mm','Alambre'],['5','Protegido contra el polvo (entra poco, sin afectar el funcionamiento)','Alambre'],['6','Estanco al polvo (no entra nada)','Alambre']]),
+ c:IEC+', cap. 4.2 y cap. 5, Tablas 1 y 2.'},
+ip_2:{t:'Segunda cifra: agua',k:['segunda cifra','2 cifra','agua','lluvia','chorro','inmersion','goteo','proyecciones','ipx'],
+ p:tabla(['Cifra','Protegido contra'],[['0','No protegido'],['1','Caída vertical de gotas'],['2','Gotas con inclinación máx. de 15°'],['3','Agua en forma de lluvia (hasta 60° de la vertical)'],['4','Proyecciones de agua desde cualquier dirección'],['5','Chorros de agua'],['6','Chorros fuertes de agua'],['7','Inmersión temporal'],['8','Inmersión prolongada (condiciones a acordar fabricante y usuario)']])+'<p>Ojo: IPX7 o IPX8 solos no garantizan resistir chorros. Para eso debe decir IPX5/IPX7 o similar.</p>',
+ c:IEC+', cap. 6, Tabla 3.'},
+ip_let:{t:'Letras adicionales y suplementarias',k:['letra adicional','letra suplementaria','letras','a b c d','h m s w','intemperie','alta tension'],
+ p:'<p>La <b>letra adicional</b> se usa sólo si la protección real de las personas es mejor que la de la 1.ª cifra, o si la 1.ª cifra se reemplaza por X.</p>'+tabla(['Letra','Protege contra acceso con'],[['A','Dorso de la mano (esfera 50 mm)'],['B','Dedo (12 mm, 80 mm de largo)'],['C','Herramienta (2,5 mm, 100 mm de largo)'],['D','Alambre (1,0 mm, 100 mm de largo)']])+tabla(['Suplementaria','Significado'],[['H','Aparato de alta tensión'],['M','Ensayo de agua con partes móviles en movimiento'],['S','Ensayo de agua con partes móviles en reposo'],['W','Uso a la intemperie (condiciones atmosféricas especificadas)']]),
+ c:IEC+', cap. 7 (Tabla 4) y cap. 8.'},
+ip_ej:{t:'Ejemplos de designaciones',k:['ejemplo','ip34','ip23cs','ip20c','ipx5','ip2x','ip54','ip65','interpretar'],
+ p:'<ul><li><b>IP34</b>: herramientas y sólidos de 2,5 mm o más no entran; protegido contra proyecciones de agua en todas direcciones.</li><li><b>IP23CS</b>: protege de dedos y sólidos de 12,5 mm o más; agua de lluvia; herramienta de 2,5 mm y hasta 100 mm de largo; ensayado con partes en reposo.</li><li><b>IPX5</b> (sin 1.ª cifra), <b>IP2X</b> (sin 2.ª cifra), <b>IP20C</b> (letra adicional), <b>IPX5/IPX7</b> (doble uso: chorros e inmersión temporal).</li></ul>',
+ c:IEC+', cap. 4.3, 9.1 y 9.2.'},
+ip_ens:{t:'Cómo se ensaya cada grado',k:['ensayo','ensayos','calibre','fuerza','boquilla','camara de polvo','talco','prueba'],
+ p:'<ul><li>1.ª cifra 1: esfera de 50 mm con 50 N. Cifra 2: dedo articulado con 10 N. Cifra 3: varilla de 2,5 mm con 3 N. Cifra 4 a 6: alambre de 1 mm con 1 N.</li><li>Cifras 5 y 6: cámara de polvo con talco (2 kg por m³).</li><li>IPX5: boquilla de 6,3 mm, 12,5 l/min, a 2,5 a 3 m, mín. 3 min.</li><li>IPX6: boquilla de 12,5 mm, 100 l/min, misma distancia.</li><li>IPX7: 30 min sumergida (punto más bajo a 1 m si mide menos de 850 mm; punto más alto a 150 mm si mide 850 mm o más).</li></ul>',
+ c:IEC+', Tablas 6, 7 y 8; cap. 13.4 y 14.2.5 a 14.2.7.'},
+
+/* ---------- TEMA 2: EPP Y DISTANCIAS ---------- */
+epp:{t:'EPP y distancias de seguridad',k:['epp','elementos de proteccion','guantes','casco','distancia','distancias de seguridad','ley 19587','ley 19.587','taburete','alfombra'],
+ p:'<p>Sinceramente, en el material que tengo cargado <b>no figura la matriz de EPP ni la tabla de distancias de seguridad</b>, así que no te la invento. Lo único que aparece es esto, en trabajos sin tensión: guantes aislantes, pértigas de maniobra, taburetes y alfombras dieléctricas (doble nivel de aislación hasta verificar ausencia de tensión), y mantener la distancia de seguridad según la tensión de la instalación usando pértiga.</p><p>Para la matriz completa consultá a la <b>Profe de Normativas de Electrotecnia 3</b> o a los <b>Profesores de PP</b>.</p>',
+ c:REV+' (5.º regla y 3.º regla).'},
+
+/* ---------- TEMA 3: INCENDIOS Y EXTINTORES (Dec. 351/79 Cap. 18) ---------- */
+ext_gral:{t:'Cuántos matafuegos y de qué potencial',k:['matafuego','matafuegos','extintor','extintores','cantidad','200 m2','1 a','5 bc','cuantos'],
+ p:'<p>Todo edificio debe tener matafuegos de potencial mínimo <b>1 A y 5 BC</b> en cada piso, en lugares accesibles, a razón de <b>1 cada 200 m²</b> de superficie cubierta o fracción. La clase del matafuego tiene que coincidir con la clase de fuego probable.</p><p>Ejemplo: un taller de 450 m² en un piso necesita 3 matafuegos (200 + 200 + la fracción). La autoridad puede exigir más, o instalaciones fijas automáticas.</p>',
+ c:D351+', puntos 7.1.1 y 7.1.2.'},
+ext_A:{t:'Potencial extintor mínimo, fuegos clase A',k:['clase a','potencial','tabla 1','carga de fuego','madera','papel'],
+ p:tabla(['Carga de fuego','Riesgo 3 (muy comb.)','Riesgo 4 (comb.)','Riesgo 5 (poco comb.)'],[['hasta 15 kg/m²','1 A','1 A','1 A'],['16 a 30','2 A','1 A','1 A'],['31 a 60','3 A','2 A','1 A'],['61 a 100','6 A','4 A','3 A'],['más de 100','A determinar en cada caso','','']]),
+ c:D351+', punto 4.1, Tabla 1.'},
+ext_B:{t:'Potencial extintor mínimo, fuegos clase B',k:['clase b','liquidos inflamables','nafta','tabla 2','solventes'],
+ p:tabla(['Carga de fuego','Riesgo 2 (inflam.)','Riesgo 3 (muy comb.)'],[['hasta 15 kg/m²','6 B','4 B'],['16 a 30','8 B','6 B'],['31 a 60','10 B','8 B'],['61 a 100','20 B','10 B'],['más de 100','A determinar en cada caso','']])+'<p>Excepción: líquidos inflamables con superficie mayor a 1 m².</p>',
+ c:D351+', punto 4.2, Tabla 2.'},
+ext_cl:{t:'Clases de fuego C y D',k:['clase c','clase d','electrico','metales','co2','polvo quimico','abc','fuego electrico'],
+ p:'<p>Honestamente: el material cargado <b>no define las clases C y D</b> ni qué agente usar en cada una. Sólo fija potenciales para clase A y B, y pide un mínimo de "1 A y 5 BC" por piso. Para eso consultá a los docentes del área.</p>',
+ c:D351+', puntos 4.1, 4.2 y 7.1.1.'},
+inc_riesgo:{t:'Clasificación de materiales según su combustión (riesgos)',k:['riesgo','riesgos','explosivo','inflamable','combustible','refractario','incombustible','1ra categoria','2da categoria'],
+ p:tabla(['Riesgo','Material','Ejemplos'],[['1','Explosivo (sólo fuente de ignición)','Pólvoras, nitroderivados'],['2','Inflamable 1.ª cat. (inflamación ≤ 40 °C) y 2.ª cat. (41 a 120 °C)','Alcohol, nafta, acetona; kerosene, aguarrás'],['3','Muy combustible','Madera, papel, algodón'],['4','Combustible','Ciertos plásticos, cueros, lanas'],['5','Poco combustible','Celulosas artificiales'],['6','Incombustible','Hierro, plomo'],['7','Refractario (hasta 1500 °C)','Ladrillos refractarios']]),
+ c:D351+', punto 1.5 (1.5.1 a 1.5.8) y Tabla 2.1.'},
+inc_carga:{t:'Carga de fuego y resistencia al fuego',k:['carga de fuego','resistencia al fuego','f 60','f 30','f60','sector de incendio','kg/m2','cuadro'],
+ p:'<p>La <b>carga de fuego</b> es el peso en madera por m² (kg/m²) que daría el mismo calor que los materiales del sector (madera patrón de 18,41 MJ/kg). La resistencia (F, en minutos) depende del riesgo y de la carga:</p>'+tabla(['Carga de fuego','R2','R3','R4','R5'],[['hasta 15','F 60','F 30','F 30','-'],['16 a 30','F 90','F 60','F 30','F 30'],['31 a 60','F 120','F 90','F 60','F 30'],['61 a 100','F 180','F 120','F 90','F 60'],['más de 100','F 180','F 180','F 120','F 90']]),
+ c:D351+', puntos 1.2, 1.10, 1.11 y Cuadro 2.2.1 (existe también el Cuadro 2.2.2).'},
+inc_esc:{t:'Medios de escape: ancho, ocupación y distancias',k:['medios de escape','escape','salida','ancho','unidad de ancho','factor de ocupacion','evacuacion','40 m','caja de escalera','ocupacion'],
+ p:'<ul><li>Unidad de ancho de salida: <b>0,55 m</b> las dos primeras y 0,45 m las siguientes. Mínimo permitido: 2 unidades (1,10 m en edificios nuevos).</li><li>n = N / 100 (N: personas según factor de ocupación). Fracciones de 0,5 o más se redondean hacia arriba.</li><li>Factor de ocupación (1 persona cada x m²): trabajo y comercio 3; educación 2; oficinas 8; industrias 16 (o lo declara el dueño); depósitos 30.</li><li>Con 4 o más unidades, cantidad de escapes = n/4 + 1.</li><li>Desde cualquier punto de un piso alto a la caja de escalera: máx. 40 m (20 m en sótanos).</li></ul>',
+ c:D351+', puntos 3.1.1, 3.1.2, 3.1.3.2 y 3.2.3.2; 6.1.4 (sótanos).'},
+inc_mano:{t:'Escaleras de mano: uso seguro',k:['escalera de mano','escaleras de mano','escalera','altura','trabajar en altura','peldaño'],
+ p:'<ul><li>Simples: no salvan más de 5 m salvo reforzadas en el centro; prohibidas sobre 7 m (ahí van especiales fijadas, con cinturón de seguridad).</li><li>Apoyo en superficie plana y firme, con zapatas antideslizantes o ganchos arriba.</li><li>Sobrepasan 1 m el punto de apoyo superior; los pies a 1/4 de la longitud de la vertical.</li><li>Se sube y baja de frente; una persona por vez; no cargar más de 25 kg.</li><li>Las de madera no se pintan (sólo barniz transparente). Prohibido empalmar dos.</li></ul>',
+ c:D351+', punto 3.10 (incisos a a h).'},
+inc_maq:{t:'Salas de máquinas y corte de energía',k:['sala de maquinas','salas de maquinas','corte de gas','corte de electricidad','linea municipal','cortar suministro','emergencia'],
+ p:'<p>En riesgos 3 a 7, la sala de máquinas debe resistir <b>F 60</b> como mínimo, con puertas que abren hacia el exterior y cierre automático de doble contacto. A menos de 5 m de la Línea Municipal, en el nivel de acceso, tiene que haber elementos para cortar gas, electricidad u otro fluido inflamable. Aunque se corte la corriente, deben seguir funcionando bombas de incendio, iluminación y señalización de escape.</p>',
+ c:D351+', puntos 6.1.3 y 6.1.6.'},
+
+/* ---------- TEMA 4: 5 REGLAS DE ORO ---------- */
+r_lista:{t:'Lista de chequeo: las 5 Reglas de Oro',k:['5 reglas','cinco reglas','reglas de oro','lista de chequeo','chequeo','consigna','trabajo sin tension','sin tension'],
+ p:'<p>Antes de tocar una instalación, tildá mentalmente en este orden:</p><ul><li>☐ <b>1. Desconectar</b> de todas las fuentes.</li><li>☐ <b>2. Prevenir cualquier posible realimentación</b> (bloqueo y señalización).</li><li>☐ <b>3. Verificar la ausencia de tensión.</b></li><li>☐ <b>4. Poner a tierra y en cortocircuito.</b></li><li>☐ <b>5. Proteger frente a elementos próximos en tensión y señalizar la zona de trabajo.</b></li></ul><p>Elegí una regla en los botones para ver el detalle.</p>',
+ c:REV+'.'},
+r1:{t:'Regla 1: Desconectar',k:['desconectar','regla 1','primera regla','seccionador','aislar','fuentes de alimentacion'],
+ p:'<p>La parte donde vas a trabajar se aísla de <b>todas</b> las fuentes de alimentación. El aislamiento puede ser una distancia en aire o un aislante interpuesto. Se puede desconectar con equipos automáticos o con pértigas de la distancia adecuada. Ojo: esto sólo empieza el proceso, todavía no garantiza que no haya tensión.</p>',
+ c:REV+', regla 1.º (p. 50).'},
+r2:{t:'Regla 2: Prevenir realimentación',k:['realimentacion','regla 2','segunda regla','candado','bloqueo','cartel','enclavamiento','reconexion'],
+ p:'<p>Hay que impedir que alguien vuelva a cerrar el aparato de maniobra. Lo ideal es <b>bloquear el mecanismo</b> y, si hace falta, poner cartel de "No maniobrar". Se usan candados (uno por equipo de trabajo si trabajan en distintas áreas), carteles y placas.</p>',
+ c:REV+', regla 2.º (pp. 50 y 51).'},
+r3:{t:'Regla 3: Verificar ausencia de tensión',k:['verificar','ausencia de tension','regla 3','tercera regla','detector','detectores','iec 61243','probar','pertiga','tester'],
+ p:'<p>No está desenergizado hasta que lo verifiques: desconectar solo no alcanza (puede haber fallas en la desconexión o ramas mal abiertas). Se verifica en <b>todos los elementos activos</b> de la zona de trabajo o lo más cerca posible, manteniendo distancia con pértiga. En media y alta tensión, el detector se prueba antes y después. Elegí el detector según tensión nominal, CA/CC, tipo de señal y ambiente (interior o exterior).</p>',
+ c:REV+', regla 3.º (pp. 51 y 52); detectores según IEC 61243.'},
+r4:{t:'Regla 4: Poner a tierra y en cortocircuito',k:['tierra','puesta a tierra','cortocircuito','regla 4','cuarta regla','iec 61230','morseto','icc'],
+ p:'<p>Las partes donde se trabaja se ponen a tierra y en cortocircuito, siempre. Si alguien energiza por error, la corriente pasa unos instantes hasta que actúa la protección, y vos quedás a salvo. El equipo se especifica en corriente de cortocircuito por tiempo (Icc en A / 1 s, 500 ms). Pide: cable de cobre ultraflexible de sección adecuada, morsetos con buen agarre, terminales de doble compresión herméticos. Se conecta con pértiga y se revisa antes de usar.</p>',
+ c:REV+', regla 4.º (p. 52); equipos según IEC 61230.'},
+r5:{t:'Regla 5: Proteger y señalizar la zona',k:['proteger','senalizar','senalizacion','regla 5','quinta regla','zona de trabajo','delimitar','elementos proximos'],
+ p:'<p>Si cerca hay elementos que deben seguir con tensión, se toman medidas de protección adicionales <b>antes</b> de empezar, y después se delimita la zona de trabajo. Como complemento: pértigas, guantes aislantes, taburetes y alfombras dieléctricas, para mantener doble nivel de aislación hasta verificar la ausencia de tensión.</p>',
+ c:REV+', regla 5.º (p. 52).'}
+};
+
+/* =====================================================================
+   2. TEXTOS FIJOS (saludo, derivaciones, respuestas por defecto)
+   REGLA: nunca escribir la palabra prohibida "chango" en estos textos.
+   ===================================================================== */
+const SALUDO='¡Buenas y santas! Agarrá los guantes y las herramientas, que acá no hay chispa que nos asuste ni motor que no arranque. ¿Qué duda tenés de alguna normativa/resolución hoy?';
+const DERIVA='Eso escapa a las normativas de la cursada, así que no lo gestiono yo. Hablalo con los <b>Profesores de Prácticas Profesionalizantes (PP)</b> o con la <b>Profe de Normativas de Electrotecnia 3</b>, que te van a dar una mano.';
+const NOSE='No encuentro eso en el material que tengo cargado, y prefiero ser honesto antes que inventarte algo. Consultalo con los docentes del área (Profe de Normativas de Electrotecnia 3 o Profesores de PP). Mientras tanto, elegí un tema:';
+const RESPETO='Vamos a seguir con las consultas en un marco de respeto talleril, que así se trabaja mejor. Cuando quieras, preguntame por las normativas.';
+const OFENSA=['idiota','estupido','pelotudo','hdp','mierda','puta','imbecil','tarado'];
+const DERIVAR=['inscripcion','inscribir','problema personal','conflicto','pelea','nota','aprobar','examen','falta','inasistencia','turno','horario','materia'];
+
+/* =====================================================================
+   3. SONIDOS (Web Audio API, sin archivos externos)
+   Cada tipo de botón tiene su propio sonido. Editá frecuencias aquí.
+   ===================================================================== */
+let ctx;
+function nota(f,dur,tipo,ini){
+  ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+(ini||0);
+  o.type=tipo;o.frequency.value=f;
+  g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur);
+}
+const SON={
+  tema:()=>{nota(330,.09,'square');nota(495,.12,'square',.09)},  /* botón de tema */
+  item:()=>{nota(600,.14,'triangle')},                           /* botón de subtema */
+  envio:()=>{nota(440,.07,'sawtooth');nota(880,.1,'sawtooth',.07)}, /* enviar consulta */
+  volver:()=>{nota(500,.09,'sine');nota(300,.14,'sine',.09)},    /* volver al menú */
+  modo:()=>{nota(700,.06,'square');nota(500,.06,'square',.08);nota(700,.08,'square',.16)}
+};
+const sonar=n=>{try{SON[n]()}catch(e){}};
+
+/* =====================================================================
+   4. LÓGICA DEL CHAT (no hace falta tocar para agregar normativas)
+   ===================================================================== */
+const log=document.getElementById('log'),inp=document.getElementById('q');
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[¿?¡!.,;:]/g,' ');
+
+function burbuja(cls,html){
+  const d=document.createElement('div');d.className='m '+cls;d.innerHTML=html;log.appendChild(d);
+  log.scrollTop=log.scrollHeight;return d;
+}
+function botones(lista){ /* lista: [{txt, fn, clase, snd}] */
+  const w=document.createElement('div');w.className='ops';
+  lista.forEach(o=>{const b=document.createElement('button');b.type='button';b.textContent=o.txt;
+    if(o.g)b.className='g';
+    b.onclick=()=>{sonar(o.snd);o.fn()};w.appendChild(b)});
+  return w;
+}
+function menuTemas(msg){
+  const d=burbuja('b','<p>'+msg+'</p>');
+  d.appendChild(botones(TEMAS.map(t=>({txt:t.n,snd:'tema',fn:()=>{burbuja('u',t.n);verTema(t)}}))));
+}
+function verTema(t){
+  const d=burbuja('b','<p><b>'+t.n+'</b>. ¿Qué querés repasar?</p>');
+  const l=t.items.map(id=>({txt:KB[id].t,snd:'item',fn:()=>{burbuja('u',KB[id].t);responder(id)}}));
+  l.push({txt:'Volver al menú',g:1,snd:'volver',fn:()=>menuTemas('Elegí un tema:')});
+  d.appendChild(botones(l));
+}
+/* Respuesta en 2 partes: a) explicación práctica, b) cita exacta */
+function responder(id){
+  const e=KB[id];
+  const d=burbuja('b','<h3>'+e.t+'</h3><div class="pt">🔧 En el taller</div>'+e.p+'<div class="cita"><b>📖 Cita:</b> '+e.c+'</div>');
+  d.appendChild(botones([{txt:'Volver al menú',g:1,snd:'volver',fn:()=>menuTemas('Elegí un tema:')}]));
+}
+/* Búsqueda por palabras clave: compara raíces de palabras (tolera plurales y errores chicos).
+   Gana la entrada con más coincidencias. Los códigos tipo IP54 o IPX5 van directo a los ejemplos IP. */
+const STOP=['que','como','cual','cuales','cuanto','cuantos','dice','significa','para','por','con','del','los','las','una','uno','hay','son','ser','esta','este','sobre','decime','explicame','quiero','necesito','hola','the'];
+const raices=s=>norm(s).split(/\s+/).filter(w=>w.length>=3&&!STOP.includes(w));
+function buscar(txt){
+  if(/\bip\s?([0-6x][0-8x]?[a-d]?)\b/.test(norm(txt)))return 'ip_ej';
+  const qs=raices(txt);let mejor=null,max=0;
+  for(const id in KB){
+    const ws=raices(KB[id].k.join(' ')+' '+KB[id].t);let s=0;
+    qs.forEach(w=>{if(ws.some(x=>x===w||(w.length>=4&&x.length>=4&&(x.startsWith(w.slice(0,5))||w.startsWith(x.slice(0,5))))))s+=w.length>=4?2:1});
+    if(s>max){max=s;mejor=id}}
+  return max>=2?mejor:null;
+}
+function consulta(txt){
+  const q=norm(txt),pal=q.split(/\s+/);
+  burbuja('u',txt.replace(/</g,'&lt;'));
+  if(OFENSA.some(w=>pal.includes(w)))return burbuja('b','<p>'+RESPETO+'</p>');
+  const id=buscar(txt);
+  if(id)return responder(id);
+  if(DERIVAR.some(w=>w.includes(' ')?q.includes(w):pal.includes(w)))return burbuja('b','<p>'+DERIVA+'</p>');
+  menuTemas(NOSE);
+}
+document.getElementById('f').onsubmit=e=>{
+  e.preventDefault();const v=inp.value.trim();if(!v)return;
+  sonar('envio');inp.value='';consulta(v);
+};
+/* Modo oscuro por defecto; el botón alterna */
+const th=document.getElementById('th');
+th.onclick=()=>{
+  const r=document.documentElement,c=r.dataset.theme==='dark'?'light':'dark';
+  r.dataset.theme=c;th.textContent=c==='dark'?'Modo claro':'Modo oscuro';sonar('modo');
+};
+window.onerror=m=>{burbuja('b','<p>Error técnico: '+m+'. Avisale a tu profe.</p>')};
+menuTemas(SALUDO);
+</script>
+</body>
+</html>
